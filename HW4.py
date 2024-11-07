@@ -39,14 +39,35 @@ def Problem_One():
 
 
 
-# def Problem_Two():
+def Problem_Two():
+
+    for i in range(0,3):
+        # Read in img
+        img = cv2.imread('images/csm{}.jpg'.format(i+1))
+        assert (img is not None), 'cannot read given image'
+
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # trained data: https://github.com/opencv/opencv/tree/master/data/haarcascades
+        haar_face = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+        faces = haar_face.detectMultiScale(img_gray, scaleFactor=1.1, minNeighbors=3) 
+        
+        for (x, y, w, h) in faces: 
+            cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,0), 2) 
+
+        cv2.imshow('Faces', img) 
+        cv2.waitKey(0) 
+
+    return 
+
 # def Problem_Three():
 # def Problem_Four():
 # def Problem_Five():
 
 def main():
-    Problem_One()
-    # Problem_Two()
+    #Problem_One()
+    Problem_Two()
     # Problem_Three()
     # Problem_Four()
     # Problem_Five()

@@ -10,6 +10,7 @@ from skimage import io
 import matplotlib.pyplot as plt
 from keras.datasets import mnist
 import statistics
+from tqdm import tqdm
 
 def Problem_One():
     
@@ -133,7 +134,7 @@ def Problem_Three():
     false_pos = 0
 
     # Precision = True Positive / (True Positive + False Positive)
-    for i in range(1000):
+    for i in tqdm(range(1000), desc="Testing Samples"):
 
         clas = kNN(X_test[i], 5, X_train, y_train)
 
@@ -142,10 +143,11 @@ def Problem_Three():
             true_pos += 1
         
         # False Positives
-        else if clas 
+        else:
+            false_pos += 1
 
-        # Precision on test data
-        print('precision = ') #precision)
+    # Precision on test data
+    print('precision = ', (true_pos) / (true_pos + false_pos)) #precision)
 
 
 

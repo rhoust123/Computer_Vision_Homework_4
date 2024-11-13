@@ -7,6 +7,9 @@ import random
 import matplotlib.pyplot as plt
 from skimage import img_as_float32
 from skimage import io
+import matplotlib.pyplot as plt
+from keras.datasets import mnist
+import statistics
 
 def Problem_One():
     
@@ -61,14 +64,99 @@ def Problem_Two():
 
     return 
 
-# def Problem_Three():
+def Problem_Three():
+
+    # Load data
+    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    print("X_train original shape", X_train.shape)
+    print("y_train original shape", y_train.shape)
+
+    for i in range(9):
+        plt.subplot(3,3,i+1)
+        plt.imshow(X_train[i], cmap='gray', interpolation='none')
+        plt.title("Class {}".format(y_train[i]))
+    plt.show()
+
+
+    # Data preprocessing
+    X_train = X_train.reshape(60000, 784)
+    X_test = X_test.reshape(10000, 784)
+    X_train = X_train.astype('float32')
+    X_test = X_test.astype('float32')
+    X_train /= 255
+    X_test /= 255
+    print("Training matrix shape", X_train.shape)
+    print("Testing matrix shape", X_test.shape)
+
+
+    # KNN classifier
+    def distance(x,y):
+        # define some distance function
+
+        # L2 Norm (Euclidean)
+        return np.linalg.norm(np.array(x) - np.array(y))
+
+    def kNN(x, k, data, label):
+        #list of distances between the given image and the images of the training set
+        distances = [distance(x,data[i]) for i in range(len(data))]
+
+        distances = np.array(distances)
+
+        # find the k nearest neighbors
+        lowest_k = np.argsort(distances)[:k]
+
+        predictions = []
+
+        # get predictions based on those neighbors
+        for i in range(len(lowest_k)): 
+            predictions.append(label[lowest_k[i]])
+
+        clas = statistics.mode(predictions)
+
+        return clas # estimated class
+
+    def image_show(i, data, label, clas):
+        x = data[i] # get vectorized image
+        x = x.reshape((28,28)) # reshape it into 28x28 format
+        title = 'predicted={0:d}, true={0:d}'.format(clas, label[i])
+        plt.imshow(x, cmap='gray') 
+        plt.title(title)
+        plt.show()
+
+
+    # Single Test case
+    i = 10
+    clas = kNN(X_test[i], 5, X_train, y_train)
+    image_show(i, X_test, y_test, clas)
+
+    true_pos = 0
+    false_pos = 0
+
+    # Precision = True Positive / (True Positive + False Positive)
+    for i in range(1000):
+
+        clas = kNN(X_test[i], 5, X_train, y_train)
+
+        # True Positives
+        if clas == y_test[i]: 
+            true_pos += 1
+        
+        # False Positives
+        else if clas 
+
+        # Precision on test data
+        print('precision = ') #precision)
+
+
+
+
 # def Problem_Four():
 # def Problem_Five():
 
 def main():
     #Problem_One()
-    Problem_Two()
-    # Problem_Three()
+    #Problem_Two()
+    Problem_Three()
     # Problem_Four()
     # Problem_Five()
 

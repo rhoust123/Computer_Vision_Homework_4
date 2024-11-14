@@ -1,16 +1,13 @@
 # Import libraries
-import os
 import cv2
-import glob
 import numpy as np
-import random
-import matplotlib.pyplot as plt
-from skimage import img_as_float32
-from skimage import io
 import matplotlib.pyplot as plt
 from keras.datasets import mnist
+from keras.datasets import cifar10
 import statistics
 from tqdm import tqdm
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 def Problem_One():
     
@@ -63,7 +60,8 @@ def Problem_Two():
         cv2.imshow('Faces', img) 
         cv2.waitKey(0) 
 
-    return 
+    # INSERT ANSWERS HERE
+
 
 def Problem_Three():
 
@@ -142,24 +140,115 @@ def Problem_Three():
         if clas == y_test[i]: 
             true_pos += 1
         
-        # False Positives
+        # False Positives (Misclassifications)
         else:
             false_pos += 1
 
     # Precision on test data
-    print('precision = ', (true_pos) / (true_pos + false_pos)) #precision)
+    print('precision = ', (true_pos) / (true_pos + false_pos))
+
+    # INSERT ANSWERS HERE
 
 
+def Problem_Four():
+
+    # Load data
+    (X_train, y_train), (X_test, y_test) = cifar10.load_data()
+    print("X_train original shape", X_train.shape)
+    print("y_train original shape", y_train.shape)
+
+    cifar_classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+    print('Example training images and their labels: ' + str([x[0] for x in y_train[0:5]])) 
+    print('Corresponding classes for the labels: ' + str([cifar_classes[x[0]] for x in y_train[0:5]]))
+
+    f, axarr = plt.subplots(1, 5)
+    f.set_size_inches(16, 6)
+    for i in range(5):
+        img = X_train[i]
+        axarr[i].imshow(img)
+    plt.show()
+
+    # Data preprocessing
+    print("--- Performing data preprocessing...")
+    X_train_orig = np.copy(X_train)
+    X_test_orig = np.copy(X_test)
+    X_train = np.reshape(X_train, (X_train.shape[0], -1)) 
+    X_test = np.reshape(X_test, (X_test.shape[0], -1))
+    
+    # Flatten label data
+    y_train = y_train.ravel()
+    y_test = y_test.ravel()
+
+    # Normalize Train and Test Data
+    X_train = X_train / 255.0
+    X_test = X_test / 255.0
+
+    # Scale Train and Test Data
+    Scaler = StandardScaler()
+    X_train = Scaler.fit_transform(X_train)
+    X_test = Scaler.transform(X_test)
+
+    # Reduce data dimensionality 
+    print("--- Performing principal component analysis...")
+    pca = PCA(n_components=2000)
+    X_train = pca.fit_transform(X_train)
+    X_test = pca.transform(X_test)
+
+    # Construct SVM classifier
+    from sklearn import svm
+    clf = svm.SVC(C=1,cache_size=500)
+
+    # Fit SVM classifier
+    print("--- Fitting model...")
+    clf.fit(X_train, y_train)
+
+    # Evaluate on test set 
+    print("--- Predicting and evaluating test data...") 
+    predicted = clf.predict(X_test)
+    score = clf.score(X_test,y_test) #classification score
+
+    print("--- Classification Score: ", score)
+
+    # Test case
+    i = 10
+    print(X_test.shape, y_test.shape, predicted.shape, X_test_orig.shape)
+    print("--- Displaying test case {}...".format(i))
+    xVal = X_test[i, :]
+    yVal = y_test[i]
+    yHat = predicted[i]
+    xImg = X_test_orig[i]
+    print(yVal, yHat)
+    plt.imshow(xImg)
+    title = 'true={0:s} est={1:s}'.format(cifar_classes[int(yVal)], cifar_classes[int(yHat)])
+    plt.title(title)
+    plt.show()
+
+    # Testing precision of model on training data 
+    true_pos = 0
+    false_pos = 0
+
+    print("--- Predicting training data...")
+    training_predicted = clf.predict(X_train)
+
+    for i in tqdm(range(X_train.shape[0]), desc="Calculating Precision"): 
+
+        # True Positive
+        if training_predicted[i] == y_train[i]:
+            true_pos += 1
+        # False Positive
+        else: 
+            false_pos += 1
+    
+    print("Precision for training data: ", true_pos / (true_pos + false_pos))
 
 
-# def Problem_Four():
 # def Problem_Five():
 
 def main():
     #Problem_One()
     #Problem_Two()
-    Problem_Three()
-    # Problem_Four()
+    #Problem_Three()
+    Problem_Four()
     # Problem_Five()
 
     return 0
